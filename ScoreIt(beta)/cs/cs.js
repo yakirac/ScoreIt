@@ -1,11 +1,10 @@
 var ScoreIt = {
 	ui : {},
-	login : {},
 	timestamp : {},
 	gamesList : {},
-	getGameData : {},
+	/*getGameData : {},
 	setGameData : {},
-	methodCall : {},
+	methodCall : {},*/
 	events : [],
 	os : {},
 	_isLargeScreen : undefined,

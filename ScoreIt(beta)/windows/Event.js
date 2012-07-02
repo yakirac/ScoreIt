@@ -118,7 +118,7 @@
 								alert(Ti.App.Properties.getString('merror'));
 							} else {
 								//alert('The event id: ' + Ti.App.Properties.getString('theEvent'));
-								alert('This game has ended');
+								//alert('This game has ended');
 								var newEvent = new ScoreIt.sEvent('gameEnd', Ti.App.Properties.getString('theEvent'), gameEndData);
 								ScoreIt.events.push(newEvent);
 
@@ -216,6 +216,7 @@
 								alert(Ti.App.Properties.getString('merror'));
 							} else {
 								//alert('The periodStart event id: ' + Ti.App.Properties.getString('theEvent'));
+								alert('The event has been added. \nThe event id:\n' + Ti.App.Properties.getString('theEvent'));
 								var newEvent = new ScoreIt.sEvent('periodStart', Ti.App.Properties.getString('theEvent'), periodStartData);
 								ScoreIt.events.push(newEvent);
 							}
@@ -246,9 +247,13 @@
 								alert(Ti.App.Properties.getString('merror'));
 							} else {
 								//alert('The periodEnd event id: ' + Ti.App.Properties.getString('theEvent'));
-								alert('The event has been added');
+								alert('The event has been added. \nThe event id:\n' + Ti.App.Properties.getString('theEvent'));
 								var newEvent = new ScoreIt.sEvent('periodEnd', Ti.App.Properties.getString('theEvent'), periodEndData);
 								ScoreIt.events.push(newEvent);
+							}
+							
+							if(ScoreIt.nhtime != undefined) {
+								ScoreIt.nhtime.stop();
 							}
 
 							//alert('We will add the event');
@@ -515,7 +520,7 @@
 								alert(Ti.App.Properties.getString('merror'));
 							} else {
 								//alert('The event id: ' + Ti.App.Properties.getString('theEvent'));
-								alert('The event has been added');
+								alert('The event has been added. \nThe event id:\n' + Ti.App.Properties.getString('theEvent'));
 								var newEvent = new ScoreIt.sEvent('substitution', Ti.App.Properties.getString('theEvent'), subData);
 								ScoreIt.events.push(newEvent);
 							}
@@ -664,7 +669,7 @@
 								alert(Ti.App.Properties.getString('merror'));
 							} else {
 								//alert('The event id: ' + Ti.App.Properties.getString('theEvent'));
-								alert('The event has been added');
+								alert('The event has been added. \nThe event id:\n' + Ti.App.Properties.getString('theEvent'));
 								var newEvent = new ScoreIt.sEvent('timeout', Ti.App.Properties.getString('theEvent'), timeoutData);
 								ScoreIt.events.push(newEvent);
 							}
@@ -1090,7 +1095,7 @@
 						alert(Ti.App.Properties.getString('merror'));
 					} else {
 						//alert('The event id: ' + Ti.App.Properties.getString('theEvent'));
-						alert('The event has been added');
+						alert('The event has been added. \nThe event id:\n' + Ti.App.Properties.getString('theEvent'));
 						var newEvent = new ScoreIt.sEvent('foul', Ti.App.Properties.getString('theEvent'), foulData);
 						ScoreIt.events.push(newEvent);
 					}
@@ -1105,7 +1110,7 @@
 			cancelButton.left = '145dp';
 			cancelButton.addEventListener('click', function() {
 				if(ScoreIt.nhtime != undefined) {
-					ScoreIt.nhtime.stop();
+					ScoreIt.nhtime.start();
 				}
 				eWindow.close();
 			});
@@ -1128,6 +1133,8 @@
 		}
 
 		if(eventName == 'Shot') {
+			var made = false;
+			var miss = false;
 			var scrollView = Ti.UI.createScrollView({
 				contentHeight : 'auto',
 				showVerticalScrollIndicator : true
@@ -1142,6 +1149,7 @@
 			var mds = Ti.UI.createSwitch({
 				title : 'Made Shot',
 				value : true,
+				enabled : true,
 				top : '90dp',
 				left : '110dp'
 			});
@@ -1149,6 +1157,7 @@
 			var mss = Ti.UI.createSwitch({
 				title : 'Missed Shot',
 				value : false,
+				enabled : false,
 				top : '130dp',
 				left : '110dp'
 			});
@@ -1159,6 +1168,7 @@
 				top : '170dp',
 				left : '110dp'
 			});
+			ScoreIt.fastBreak = false;
 
 			var goalT = Ti.UI.createSwitch({
 				title : 'Goaltending',
@@ -1166,6 +1176,7 @@
 				top : '210dp',
 				left : '110dp'
 			});
+			ScoreIt.goaltending = false;
 
 			var abBy = Ti.UI.createSwitch({
 				title : 'Assisted',
@@ -1291,7 +1302,9 @@
 			mss.addEventListener('change', function() {
 				//alert('value of missed ' + mss.value);
 				if(mss.value == true) {
+					miss = true;
 					mds.enabled = false;
+					mds.value = false;
 					abTable.headerTitle = 'Blocked By';
 					goalT.enabled = false;
 					abBy.title = 'Blocked';
@@ -1325,6 +1338,7 @@
 					}
 
 				} else if(mss.value == false) {
+					miss = false;
 					mds.enabled = true;
 					//assistedBy.enabled = true;
 					goalT.enabled = true;
@@ -1334,7 +1348,9 @@
 			mds.addEventListener('change', function() {
 				//alert('value of made ' + mds.value);
 				if(mds.value == true) {
+					made = true;
 					mss.enabled = false;
+					mss.value = false;
 					abTable.headerTitle = 'Assisted By';
 					abBy.title = 'Assisted';
 					if(!ScoreIt.isAndroid()) {
@@ -1366,6 +1382,7 @@
 					}
 
 				} else if(mds.value == false) {
+					made = false;
 					mss.enabled = true;
 					//blockedBy.enabled = true;
 				}
@@ -1373,7 +1390,7 @@
 
 			at.addEventListener('change', function() {
 				if(at.value == true) {
-					alert('Away team is true');
+					//alert('Away team is true');
 					ht.enabled = false;
 					ScoreIt.shotTeam = ScoreIt.awayTeamName;
 
@@ -1398,7 +1415,7 @@
 					//alert('Home team is true');
 					at.enabled = false;
 					ScoreIt.shotTeam = ScoreIt.homeTeamName;
-					alert(ScoreIt.shotTeam);
+					//alert(ScoreIt.shotTeam);
 					for(var s = 0; s < ScoreIt.honField.length; s++) {
 						mmdata[s] = Ti.UI.createTableViewRow({
 							id : ScoreIt.honField[s].getId(),
@@ -1543,6 +1560,8 @@
 			okButton.top = '650dp';
 			okButton.left = '60dp';
 			okButton.addEventListener('click', function() {
+				var theMethod;
+				var shotData;
 				if(ScoreIt.shooter == undefined || ScoreIt.shotType == undefined || ScoreIt.points == undefined || ScoreIt.shotTeam == undefined) {
 					alert('Please select a team, a shooter, a shot type and the number of points');
 					alert('The shooter: ' + ScoreIt.shooter + '\the shot type' + ScoreIt.shotType + '\the points' + ScoreIt.points + '\nthe shot team' + ScoreIt.shotTeam);
@@ -1558,11 +1577,13 @@
 					alert('The shot type Jump-Shot can only be 2 or 3 points');
 				} else {
 					var shotData;
-					var method;
+					var theMethod = '';
 					if(mds.enabled == true && mds.value == true) {
+						theMethod = 'madeShot';
 						if(ScoreIt.shotTeam == ScoreIt.homeTeamName) {
 							ScoreIt.homeScore = ScoreIt.homeScore + parseInt(ScoreIt.points);
-							ScoreIt.htscore.text = ScoreIt.homeScore;
+							Ti.API.info('Updated HomeScore: ' + ScoreIt.homeScore);
+							ScoreIt.htscore.text = '' + ScoreIt.homeScore + '';
 							var ppoints;
 
 							for(var i = 0; i < ScoreIt.honField.length; i++) {
@@ -1577,7 +1598,8 @@
 
 						} else if(ScoreIt.shotTeam == ScoreIt.awayTeamName) {
 							ScoreIt.awayScore = ScoreIt.awayScore + parseInt(ScoreIt.points);
-							ScoreIt.atscore.text = ScoreIt.homeScore;
+							Ti.API.info('Updated AwayScore: ' + ScoreIt.awayScore);
+							ScoreIt.atscore.text = '' + ScoreIt.awayScore + '';
 
 							for(var i = 0; i < ScoreIt.aonField.length; i++) {
 								if(ScoreIt.shooter == ScoreIt.aonField[i].getId()) {
@@ -1594,9 +1616,11 @@
 							ScoreIt.elocation = [0, 0];
 						}
 
-						method = 'madeShot';
+						
 						if(abBy.value == true) {
 							//alert('value of fastBreak ' + ScoreIt.fastBreak);
+							//Ti.API.info('Made shot value of fast break: ' + ScoreIt.fastBreak);
+							//Ti.API.info('Made shot value of goaltending: ' + ScoreIt.goaltending);
 							shotData = {
 								"gameId" : "" + Ti.App.Properties.getList('selectedGame')[0].gameId + "",
 								"shooter" : "" + ScoreIt.shooter + "",
@@ -1615,6 +1639,7 @@
 
 						} else {
 							//alert('value of fastBreak ' + ScoreIt.fastBreak);
+							theMethod = 'madeShot';
 							shotData = {
 								"gameId" : "" + Ti.App.Properties.getList('selectedGame')[0].gameId + "",
 								"shooter" : "" + ScoreIt.shooter + "",
@@ -1633,7 +1658,7 @@
 						}
 
 					} else if(mss.enabled == true && mss.value == true) {
-						method = 'missedShot';
+						theMethod = 'missedShot';
 						if(ScoreIt.elocation == undefined) {
 							ScoreIt.elocation = [0, 0];
 						}
@@ -1655,6 +1680,7 @@
 							};
 
 						} else {
+							theMethod = 'missedShot';
 							shotData = {
 								"gameId" : "" + Ti.App.Properties.getList('selectedGame')[0].gameId + "",
 								"shooter" : "" + ScoreIt.shooter + "",
@@ -1670,15 +1696,24 @@
 							};
 						}
 					}
-
-					ScoreIt.methodCall(method, null, shotData);
+					
+					/*var et = '';
+					if(made == true){
+						et = 'made';
+						ScoreIt.methodCall('madeShot', null, shotData);
+					}else if(miss == true){
+						et = 'missed';
+						ScoreIt.methodCall('missedShot', null, shotData);
+					}*/
+					
+					ScoreIt.methodCall(theMethod, null, shotData);
 
 					if(Ti.App.Properties.getString('mresult') == 'error') {
 						alert(Ti.App.Properties.getString('merror'));
 					} else {
 						//alert('The event id: ' + Ti.App.Properties.getString('theEvent'));
-						alert('The event has been added');
-						var newEvent = new ScoreIt.sEvent(method, Ti.App.Properties.getString('theEvent'), shotData);
+						alert('The event has been added. \nThe event id:\n' + Ti.App.Properties.getString('theEvent') + '\nevent name: ' + theMethod);
+						var newEvent = new ScoreIt.sEvent(theMethod, Ti.App.Properties.getString('theEvent'), shotData);
 						ScoreIt.events.push(newEvent);
 					}
 
@@ -1850,7 +1885,7 @@
 						alert(Ti.App.Properties.getString('merror'));
 					} else {
 						//alert('The event id: ' + Ti.App.Properties.getString('theEvent'));
-						alert('The event has been added');
+						alert('The event has been added. \nThe event id:\n' + Ti.App.Properties.getString('theEvent'));
 						var newEvent = new ScoreIt.sEvent('rebound', Ti.App.Properties.getString('theEvent'), reboundData);
 						ScoreIt.events.push(newEvent);
 					}
@@ -2024,7 +2059,7 @@
 						alert(Ti.App.Properties.getString('merror'));
 					} else {
 						//alert('The event id: ' + Ti.App.Properties.getString('theEvent'));
-						alert('The event has been added');
+						alert('The event has been added.' /*\nThe event id:\n' + Ti.App.Properties.getString('theEvent')*/);
 						var newEvent = new ScoreIt.sEvent('jumpBall', Ti.App.Properties.getString('theEvent'), jwinner);
 						ScoreIt.events.push(newEvent);
 					}
@@ -2284,7 +2319,7 @@
 						alert(Ti.App.Properties.getString('merror'));
 					} else {
 						//alert('The event id: ' + Ti.App.Properties.getString('theEvent'));
-						alert('The event has been added');
+						alert('The event has been added. \nThe event id:\n' + Ti.App.Properties.getString('theEvent'));
 						var newEvent = new ScoreIt.sEvent('turnover', Ti.App.Properties.getString('theEvent'), turnoverData);
 						ScoreIt.events.push(newEvent);
 					}

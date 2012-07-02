@@ -55,25 +55,8 @@
 					backgroundColor : '#999'
 				});
 				data[i] = hteam;
-
-				htplayers = Ti.App.Properties.getList('homeTeamPlayers');
-
-				for(var h = 0; h < htplayers.length; h++) {
-					if(h == 0) {
-
-					} else {
-						var title = htplayers[h].jerseyNumber + ' ' + htplayers[h].name.lastName + ', ' + htplayers[h].name.firstName;
-						var pid = '' + htplayers[h].playerId + '';
-						//alert('The next player is ' + pid);
-						var hrow = createPlayerRow({
-							id : pid,
-							title : title,
-							hasCheck : false
-						});
-						data[i].add(hrow);
-					}
-
-				}
+				
+				
 			}
 			if(i == 1) {
 				var aview = Ti.UI.createView({
@@ -93,24 +76,7 @@
 					backgroundColor : '#999'
 				});
 				data[i] = ateam;
-
-				atplayers = Ti.App.Properties.getList('awayTeamPlayers');
-
-				for(var a = 0; a < atplayers.length; a++) {
-					if(a == 0) {
-
-					} else {
-						var title = atplayers[a].jerseyNumber + ' ' + atplayers[a].name.lastName + ', ' + atplayers[a].name.firstName;
-						var pid = '' + atplayers[a].playerId + '';
-
-						var arow = createPlayerRow({
-							id : pid,
-							title : title,
-							hasCheck : false
-						});
-						data[i].add(arow);
-					}
-				}
+				
 			}
 
 		}
@@ -129,6 +95,108 @@
 			separatorColor : 'transparent'
 		});
 		gameWindow.add(playerTableView);
+		
+		var xhr = Ti.Network.createHTTPClient();
+			Ti.API.info('The current signature: ' + Ti.App.Properties.getString('sig'));
+			//ScoreIt.newSig();
+			//Ti.API.info('The new signature: ' + Ti.App.Properties.getString('sig'));
+			var gdurl = 'http://api.espnalps.com/v0/cbb/getGameData/' + gameId + '?token=' + Ti.App.Properties.getString('token') + '&signature=' + Ti.App.Properties.getString('sig') + '&key=' + ScoreIt.gamesList.key;
+			var text;
+			var json;
+	
+			xhr.onload = function(e) {
+				//Ti.API.info('gameData: ' + xhr.responseText);
+				json = JSON.parse(xhr.responseText);
+				if(json.result == 'okay'){
+					for(var t = 0; t < playerTableView.data.length; t++){
+						//Ti.API.info('Section: ' + playerTableView.data[t].headerTitle);
+						if(t == 0){
+							htplayers = json.response.homeTeam.players;
+							for(var h = 0; h < htplayers.length; h++) {
+								if(h == 0) {
+								}else {
+									var title = htplayers[h].jerseyNumber + ' ' + htplayers[h].name.lastName + ', ' + htplayers[h].name.firstName;
+									var pid = '' + htplayers[h].playerId + '';
+									//alert('The next player is ' + pid);
+									var hrow = createPlayerRow({
+										id : pid,
+										title : title,
+										hasCheck : false
+									});
+									playerTableView.data[t].add(hrow);
+								}
+		
+							}
+							
+						}
+						if(t == 1){
+							atplayers = json.response.awayTeam.players;
+							for(var a = 0; a < atplayers.length; a++) {
+								if(a == 0) {
+								}else {
+									var title = atplayers[a].jerseyNumber + ' ' + atplayers[a].name.lastName + ', ' + atplayers[a].name.firstName;
+									var pid = '' + atplayers[a].playerId + '';
+		
+									var arow = createPlayerRow({
+										id : pid,
+										title : title,
+										hasCheck : false
+									});
+									playerTableView.data[t].add(arow);
+								}
+		
+							}
+						}
+						
+						var temp = playerTableView.data;
+						playerTableView.data = temp;
+					}
+				}else if(json.result == 'error'){
+					Ti.App.Properties.setString('gdresult', json.result);
+					Ti.App.Properties.setString('gderror', xhr.responseText);
+					alert(xhr.responseText);
+				}
+				/*if(json.result == 'okay') {
+					//alert('Login was sucessful');
+					Ti.App.Properties.setString('gdresult', json.result);
+					Ti.API.info('hometeamplayers: ' + json.response.homeTeam.players);
+					Ti.App.Properties.setList('homeTeamPlayers', json.response.homeTeam.players);
+					//alert('The home players' + json.response.homeTeam.players);
+					Ti.API.info('awayteamplayers: ' + json.response.awayTeam.players);
+					Ti.App.Properties.setList('awayTeamPlayers', json.response.awayTeam.players);
+					//alert('The home players' + json.response.awayTeam.players);
+					//alert(json.response.games[0].homeTeam.teamName);
+					Ti.API.info('home players on the field: ' + json.response.gameSetupData.homeTeam.onField);
+					Ti.App.Properties.setList('hpOnField', json.response.gameSetupData.homeTeam.onField);
+					Ti.API.info('away players on the field: ' + json.response.gameSetupData.awayTeam.onField);
+					Ti.App.Properties.setList('apOnField', json.response.gameSetupData.awayTeam.onField);
+	
+				} else if(json.result == 'error') {
+					var es = json.errors;
+					//alert('There was a problem with login. \nField: ' + es.field
+					//+ '\nType: ' + es.type + '\nMessage: ' + es.message);
+					//alert('There was a problem with login. ' + es);
+					Ti.App.Properties.setString('gdresult', json.result);
+					Ti.App.Properties.setString('gderror', xhr.responseText);
+					//alert(json.result + ": " + es);
+				}*/
+	
+			};
+	
+			//alert(Ti.App.Properties.getString('gdresult'));
+	
+			xhr.onerror = function(e) {
+				/*json = JSON.parse(xhr.responseText);
+				var error = json.errors;
+	
+				alert('Game Data. There was an error. ' + xhr.responseText);*/
+	
+			};
+	
+			//alert('The url: \n' + url);
+			xhr.open('GET', gdurl);
+			xhr.setRequestHeader('Content-Type', 'application/json');
+			xhr.send();
 
 		var scButton = Ti.UI.createButton({
 			title : 'Start Scoring',
@@ -146,7 +214,7 @@
 
 				var hponField = false;
 				var aponField = false;
-
+				Ti.API.info('The length of the htplayers: ' + htplayers.length);
 				for(var o = 0; o < htplayers.length; o++) {
 					hponField = false;
 					aponField = false;

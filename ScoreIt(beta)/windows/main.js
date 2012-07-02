@@ -41,34 +41,39 @@
 		top : '240dp'
 		//backgroundImage: ScoreIt.path.R + 'nimages/back.png'
 	});
+	siButton.addEventListener('singletap', function() {
+
+		//var status = ScoreIt.login('hekili', 'Blazing88!');
+		
+		ScoreIt.login(user.value, pass.value);
+		//ScoreIt.login('hekili', 'Blazing88!');
+		//alert(Ti.App.Properties.getString('result'));
+		var status = Ti.App.Properties.getString('result');
+		if(status == 'error') {
+			alert('There was a problem with login: ' + Ti.App.Properties.getString('error'));
+		}
+		else if(status == 'networkError'){
+			alert('Login error: \n' + Ti.App.Properties.getString('error'));
+		}
+		else if(status == 'okay') {
+			//alert('You have been logged in');
+			
+			var games = ScoreIt.ui.createGamesWindow();
+			ScoreIt.navGroup.open(games);
+			//alert('You have been logged in');
+		}
+		else {
+			alert('There is a problem with logging in. Please retry.');
+		}
+
+	});
 
 	mainWindow.add(applogo);
 	mainWindow.add(user);
 	mainWindow.add(pass);
 	mainWindow.add(siButton);
+	
 
-	siButton.addEventListener('click', function() {
-
-		//var status = ScoreIt.login('hekili', 'Blazing88!');
-		ScoreIt.login(user.value, pass.value);
-		//alert(status);
-		if(ScoreIt.loginResult == 'error') {
-			alert('There was a problem with login ' + ScoreIt.errorResponse);
-		}
-		if(ScoreIt.loginResult == 'okay') {
-			alert('You have been logged in');
-			var games = ScoreIt.ui.createGamesWindow();
-			ScoreIt.navGroup.open(games);
-			//alert('You have been logged in');
-		}
-		if(ScoreIt.loginResult == 'netowrkError'){
-			alert('There was a problem ' + ScoreIt.errorResponse);
-		}
-		else {
-			alert('There is a problem with logging in');
-		}
-
-	});
 
 	if(ScoreIt.isAndroid()) {
 		ScoreIt.navGroup = {
@@ -95,6 +100,8 @@
 	} else {
 		navWindow.open();
 	}
+	
 		
 })();
+
 
